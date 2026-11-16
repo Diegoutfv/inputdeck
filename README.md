@@ -1,5 +1,108 @@
 # InputDeck
 
+**English** · [Español](#español)
+
+Cross-platform input viewer (Windows / macOS / Linux) for OBS: shows your gamepad, keyboard and
+mouse in a minimalist white-outline style.
+
+## Features
+
+| Controller | Connection | Status |
+|---|---|---|
+| Xbox Series X\|S (and any controller with an SDL mapping) | USB / Bluetooth | ✅ Xbox Series layout |
+| DualSense (PS5) / DualShock 4 | USB / Bluetooth | ✅ PlayStation layout (via SDL) |
+| Nintendo Switch 2 Pro Controller | USB | ✅ custom backend, Windows only |
+
+- **Auto-detection:** switches layout depending on the connected controller. A Switch 2 Pro
+  Controller over USB takes priority; otherwise the first controller SDL sees is used.
+- **Manual picker:** right-click to choose the layout you prefer, even if the controller is a
+  different type (your choice is saved).
+- Analog triggers that fill as you press them; sticks that glow as they move.
+- Keyboard keys and mouse buttons below the controller, **only while they are pressed**.
+- Resizable window drawn at its real resolution (sharp in OBS).
+- With no controller connected it shows "Waiting for a controller to connect…".
+
+## Usage
+
+```bash
+python -m venv .venv
+# Windows:  .venv\Scripts\activate      macOS/Linux:  source .venv/bin/activate
+pip install -r requirements.txt
+python run.py
+```
+
+**Right-click** opens the layout menu (Auto, Xbox, PlayStation or Switch 2). Your choice is saved
+in `%APPDATA%\InputViewer\config.json` (macOS: `~/Library/Application Support/InputViewer`,
+Linux: `~/.config/InputViewer`). When you force a layout, buttons are converted by physical
+position (e.g. Xbox A, at the bottom, lights up Nintendo B, also at the bottom).
+
+**G** toggles a green background (chroma key in OBS: Window Capture + "Color Key" filter
+`#00B140`) and black.
+
+## Build an executable
+
+```bash
+pip install pyinstaller
+pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libusb_package --collect-binaries hid run.py
+```
+
+## Platform notes
+
+- **Controller:** uses SDL GameController, so button names are identical on every OS. The
+  DualSense touchpad click depends on SDL exposing it on your system.
+- **Global keyboard/mouse** (pynput, in a separate process so the cursor doesn't lag while you
+  move the window):
+  - Windows: works without extra permissions (games running as administrator may require running
+    the viewer as administrator too).
+  - macOS: you must grant the program *Accessibility* / *Input Monitoring* permission.
+  - Linux: requires X11 (does not work on pure Wayland).
+- The mouse wheel is not shown.
+- **Steam:** if Steam is open, its desktop configuration can turn the controller into a
+  mouse/keyboard on Windows; that is independent of this program (which only reads the controller).
+- **Switch 2 Pro Controller:** Windows does not expose it as a standard gamepad, so it is
+  initialized over USB with custom commands and then its HID reports are read. The protocol comes
+  from community research and may change with firmware updates.
+
+## Project structure
+
+```
+inputviewer/
+  gamepad.py       SDL controller backend (Xbox, PlayStation...) -> common PadState
+  switch2_usb.py   USB backend for the Switch 2 Pro Controller -> PadState
+  adapt.py         converts buttons between controller families (for the manual picker)
+  keys.py          global keyboard and mouse (pynput, separate process)
+  draw.py          drawing primitives
+  xbox.py / playstation.py / switch2.py   visual layouts
+  menu.py          right-click menu
+  config.py        user preferences
+  app.py           window, auto-detection and main loop
+run.py             entry point
+```
+
+To add another controller: create a backend that returns a `PadState` (with its `kind`) and a
+layout with a `draw(painter, pad)` function, then register it in `LAYOUTS` (`app.py`).
+
+Preview the look without a controller: `python run.py --demo xbox|playstation|switch2|none`.
+
+## Credits and notices
+
+- Switch 2 Pro Controller protocol:
+  [switchbrew](https://switchbrew.org/wiki/Switch_2:_Pro_Controller) and
+  [ndeadly/switch2_controller_research](https://github.com/ndeadly/switch2_controller_research).
+- The Xbox logo on the Guide button comes from [Simple Icons](https://simpleicons.org/) (CC0).
+- Xbox, PlayStation, DualSense and Nintendo Switch are trademarks of their respective owners. This
+  project is independent and is not affiliated with or endorsed by them.
+
+## License
+
+[MIT](LICENSE)
+
+---
+
+# Español
+
+[English](#inputdeck) · **Español**
+
 Input viewer multiplataforma (Windows / macOS / Linux) para OBS: muestra el mando, el teclado y
 el ratón con un estilo minimalista de contornos blancos.
 

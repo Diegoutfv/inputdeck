@@ -15,6 +15,7 @@ import threading
 import time
 
 MIN_VISIBLE = 0.025  # un toque muy corto se ve al menos este tiempo; luego se apaga al soltar
+SCROLL_VISIBLE = 0.18  # cuánto se ve encendido un paso de la rueda del ratón
 
 try:
     from pynput import keyboard, mouse
@@ -27,9 +28,9 @@ _SPECIAL = {
     "space": "SPACE", "enter": "ENTER", "tab": "TAB", "esc": "ESC", "backspace": "BACK",
     "delete": "DEL", "insert": "INS", "home": "HOME", "end": "END", "page_up": "PGUP",
     "page_down": "PGDN", "caps_lock": "CAPS", "up": "↑", "down": "↓", "left": "←", "right": "→",
-    "shift": "SHIFT", "shift_l": "SHIFT", "shift_r": "SHIFT",
-    "ctrl": "CTRL", "ctrl_l": "CTRL", "ctrl_r": "CTRL",
-    "alt": "ALT", "alt_l": "ALT", "alt_r": "ALT", "alt_gr": "ALT",
+    "shift": "LShift", "shift_l": "LShift", "shift_r": "RShift",
+    "ctrl": "LCtrl", "ctrl_l": "LCtrl", "ctrl_r": "RCtrl",
+    "alt": "LAlt", "alt_l": "LAlt", "alt_r": "RAlt", "alt_gr": "RAlt",
     "cmd": _SUPER, "cmd_l": _SUPER, "cmd_r": _SUPER, "menu": "MENU", "print_screen": "PRTSC",
 }
 _MOUSE = {"left": "LMB", "right": "RMB", "middle": "MMB",
@@ -71,9 +72,13 @@ def _child(q):
         if n:
             q.put(("p", "mouse_" + n, n) if pressed else ("r", "mouse_" + n))
 
+    def scroll(x, y, dx, dy):  # la rueda no tiene "soltar": se manda como un toque breve
+        if dy:
+            q.put(("t", "scroll_up", "ScrollU") if dy > 0 else ("t", "scroll_down", "ScrollD"))
+
     try:
         keyboard.Listener(on_press=kd, on_release=ku, daemon=True).start()
-        mouse.Listener(on_click=click, daemon=True).start()
+        mouse.Listener(on_click=click, on_scroll=scroll, daemon=True).start()
     except Exception:
         return
     parent = mp.parent_process()
@@ -94,6 +99,13 @@ def _press(ident, name):
         e = _held.get(ident)
         if e is None or not e[3]:  # ignora la repetición automática
             _held[ident] = [name, now, now + MIN_VISIBLE, True]
+
+
+def _tap(ident, name):
+    """Evento sin 'soltar' (rueda del ratón): visible un instante y se apaga solo."""
+    now = time.time()
+    with _lock:
+        _held[ident] = [name, now, now + SCROLL_VISIBLE, False]
 
 
 def _release(ident):
@@ -124,6 +136,8 @@ def _drain():
             m = _q.get_nowait()
             if m[0] == "p":
                 _press(m[1], m[2])
+            elif m[0] == "t":
+                _tap(m[1], m[2])
             else:
                 _release(m[1])
     except queue.Empty:

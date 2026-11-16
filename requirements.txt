@@ -1,0 +1,6 @@
+pygame-ce>=2.5
+pynput>=1.7
+# Backend USB del Switch 2 Pro Controller (opcional; solo probado en Windows)
+pyusb>=1.2
+libusb-package>=1.0
+hidapi>=0.14

@@ -39,6 +39,13 @@ class Painter:
         img = self.font(sz).render(s, True, color)
         self.surf.blit(img, img.get_rect(center=(cx * self.k, cy * self.k)))
 
+    def line(self, a, b, color, lw=1.0):
+        pygame.draw.line(self.surf, color, (a[0] * self.k, a[1] * self.k), (b[0] * self.k, b[1] * self.k),
+                         self.w(lw))
+
+    def dot(self, x, y, r, color):
+        pygame.draw.circle(self.surf, color, (x * self.k, y * self.k), max(1, r * self.k))
+
     def rrect(self, x, y, w, h, r, on, label="", tsz=12, lw=2, color=WHITE):
         """Tecla/botón: contorno redondeado; relleno (y texto negro) cuando está pulsado."""
         k = self.k

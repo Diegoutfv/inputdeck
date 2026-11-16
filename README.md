@@ -5,6 +5,20 @@
 Cross-platform input viewer (Windows / macOS / Linux) for OBS: shows your gamepad, keyboard and
 mouse in a minimalist white-outline style.
 
+<table>
+  <tr>
+    <td align="center"><img src="docs/xbox.png" alt="Xbox Series layout" width="320"><br><sub>Xbox Series</sub></td>
+    <td align="center"><img src="docs/playstation.png" alt="PlayStation DualSense layout" width="320"><br><sub>DualSense</sub></td>
+  </tr>
+  <tr>
+    <td align="center"><img src="docs/switch2.png" alt="Switch 2 Pro Controller layout" width="320"><br><sub>Switch 2 Pro Controller</sub></td>
+    <td align="center"><img src="docs/menu.png" alt="Right-click layout picker" width="320"><br><sub>Right-click layout picker / Selector de diseño (clic derecho)</sub></td>
+  </tr>
+</table>
+
+<sub>Screenshots show some buttons pressed, the sticks glowing and a few keyboard/mouse keys.
+· Las capturas muestran botones pulsados, los sticks brillando y algunas teclas/ratón.</sub>
+
 ## Features
 
 | Controller | Connection | Status |

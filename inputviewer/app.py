@@ -14,6 +14,7 @@ os.environ.setdefault("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1")
 import pygame
 
 from . import chips, config, keys, switch2_usb
+from .background import SUPPORTED, KeepAlive
 from . import layout as L
 from .draw import FONT_NAMES, Painter
 from .editor import Editor
@@ -81,6 +82,7 @@ def main():
     L.normalize(layout)
     layout_ver = 0
     editor, menu = Editor(), ContextMenu()
+    keep_alive = KeepAlive(cfg.get("keep_running", True))  # al minimizar: seguir capturable por OBS (Windows)
     bg_green = cfg.get("background", "green") != "black" and shot is None  # fondo preferido (chroma key)
     confirm = None                # ("delete", id) mientras se espera sí/no
     toast, toast_until = "", 0.0
@@ -112,11 +114,18 @@ def main():
         items += [(None, "-", False), ("folder", "Open layouts folder", False),
                   (None, "-", False), (None, "Background", False),
                   ("bg:green", "Green (chroma key)", bg_green), ("bg:black", "Black", not bg_green)]
+        if SUPPORTED:  # de momento solo Windows
+            items += [(None, "-", False), (None, "Window", False),
+                      ("keepalive", "Keep capturing when minimized", keep_alive.enabled)]
         return items
 
     def do_menu(key):
         nonlocal confirm, bg_green
-        if key.startswith("bg:"):
+        if key == "keepalive":
+            keep_alive.enabled = not keep_alive.enabled
+            config.save({**config.load(), "keep_running": keep_alive.enabled})
+            say("Minimizing now keeps OBS capturing" if keep_alive.enabled else "Minimizing now works normally")
+        elif key.startswith("bg:"):
             bg_green = key == "bg:green"
             config.save({**config.load(), "background": "green" if bg_green else "black"})
         elif key.startswith("layout:"):
@@ -179,6 +188,7 @@ def main():
 
         # ------------------------------------------------------- eventos
         for e in pygame.event.get():
+            keep_alive.handle(e)
             if e.type == pygame.QUIT:
                 running = False
             elif confirm:

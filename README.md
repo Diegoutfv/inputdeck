@@ -32,6 +32,10 @@ Cross-platform input viewer (Windows / macOS / Linux) for OBS in a minimalist wh
 - Left and right Shift / Ctrl / Alt are told apart.
 - No lag: every press and release is an event, not sampled; short taps stay visible for a moment.
 - Resizable window drawn at its real resolution (sharp in OBS).
+- **Keeps capturing when minimized (Windows):** Windows stops drawing minimized windows, so OBS's
+  *Window Capture* freezes or goes black. With **Keep capturing when minimized** (right-click menu,
+  on by default), the minimize button makes the window invisible and click-through instead, while
+  OBS keeps capturing it live. Click its button in the taskbar to bring it back.
 
 ## Usage
 
@@ -97,7 +101,8 @@ pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libu
 - **Global keyboard/mouse** (pynput, in a separate process so the cursor doesn't lag while you
   move the window):
   - Windows: works without extra permissions (games running as administrator may require running
-    the viewer as administrator too).
+    the viewer as administrator too). Likewise, keys pressed while an elevated window has the focus
+    (for example OBS run as administrator) are not seen by a normal viewer.
   - macOS: grant the program *Accessibility* / *Input Monitoring* permission.
   - Linux: requires X11 (does not work on pure Wayland).
 - **Gamepads** use SDL GameController (Xbox, PlayStation…) and a custom USB backend for the
@@ -112,6 +117,7 @@ inputviewer/
   editor.py        layout editor (move, resize, rename, bind)
   render.py        draws a layout and the boxes for unassigned inputs
   keyboard.py      data for the built-in default layout
+  background.py    keep capturing when minimized (Windows)
   menu.py          right-click menu
   config.py        user data folder and preferences
   chips.py         gamepad state -> box names
@@ -165,6 +171,11 @@ contornos blancos.
 - Sin retraso: cada pulsación y suelta es un evento, no un muestreo; los toques cortos se ven un
   instante.
 - Ventana redimensionable que se dibuja a la resolución real (nítido en OBS).
+- **Sigue capturando al minimizar (Windows):** Windows deja de dibujar las ventanas minimizadas, así
+  que la *Captura de ventana* de OBS se congela o se queda en negro. Con **Keep capturing when
+  minimized** (menú de clic derecho, activada por defecto), el botón de minimizar hace la ventana
+  invisible y transparente a los clics en vez de minimizarla, y OBS la sigue capturando en vivo.
+  Pulsa su botón en la barra de tareas para recuperarla.
 
 ## Uso
 
@@ -218,7 +229,8 @@ pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libu
 - **Teclado/ratón globales** (pynput, en un proceso aparte para no ralentizar el cursor al mover
   la ventana):
   - Windows: funciona sin permisos extra (los juegos como administrador pueden requerir ejecutar
-    el viewer como administrador).
+    el viewer como administrador). Igualmente, las teclas que pulses mientras una ventana elevada
+    tiene el foco (por ejemplo OBS ejecutado como administrador) no las ve un viewer normal.
   - macOS: hay que dar permiso de *Accesibilidad* / *Monitorización de entrada* al programa.
   - Linux: requiere X11 (no funciona con Wayland puro).
 - **Mandos:** usan SDL GameController (Xbox, PlayStation…) y un backend USB propio para el Switch 2
@@ -233,6 +245,7 @@ inputviewer/
   editor.py        editor de diseños (mover, redimensionar, renombrar, asignar)
   render.py        dibuja un diseño y las cajitas de entradas sin asignar
   keyboard.py      datos del diseño por defecto incluido
+  background.py    seguir capturando al minimizar (Windows)
   menu.py          menú de clic derecho
   config.py        carpeta de datos del usuario y preferencias
   chips.py         estado del mando -> nombres de cajitas

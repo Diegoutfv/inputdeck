@@ -39,6 +39,11 @@ mouse in a minimalist white-outline style.
   *Window Capture* freezes or goes black. With **Keep capturing when minimized** (right-click menu,
   on by default), the minimize button makes the window invisible and click-through instead, while
   OBS keeps capturing it live. Click its button in the taskbar to bring it back.
+- **Start with Windows:** a checkbox in the right-click menu that makes the program launch when you
+  sign in. It only affects your user (no administrator rights) and writes a single entry in
+  `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, named after the executable, so the two
+  editions don't overwrite each other. Untick it in the same menu, or in Windows' *Startup apps*.
+  If you move the `.exe`, untick and tick it again so the entry points to the new location.
 
 ## Usage
 
@@ -93,6 +98,7 @@ inputviewer/
   draw.py          drawing primitives
   xbox.py / playstation.py / switch2.py   visual layouts
   background.py    keep capturing when minimized (Windows)
+  startup.py       start with Windows (Run registry entry)
   menu.py          right-click menu
   config.py        user preferences
   app.py           window, auto-detection and main loop
@@ -147,6 +153,11 @@ el ratón con un estilo minimalista de contornos blancos.
   minimized** (menú de clic derecho, activada por defecto), el botón de minimizar hace la ventana
   invisible y transparente a los clics en vez de minimizarla, y OBS la sigue capturando en vivo.
   Pulsa su botón en la barra de tareas para recuperarla.
+- **Arrancar con Windows:** una casilla en el menú de clic derecho para que el programa se abra al
+  iniciar sesión. Solo afecta a tu usuario (sin permisos de administrador) y escribe una única
+  entrada en `HKCU\Software\Microsoft\Windows\CurrentVersion\Run`, con el nombre del ejecutable, así
+  que las dos ediciones no se pisan. Se quita desde el mismo menú o desde *Aplicaciones de inicio*
+  de Windows. Si mueves el `.exe`, desmárcala y vuelve a marcarla para que apunte a la nueva ruta.
 
 ## Uso
 
@@ -201,6 +212,7 @@ inputviewer/
   draw.py          primitivas de dibujo
   xbox.py / playstation.py / switch2.py   distribuciones visuales
   background.py    seguir capturando al minimizar (Windows)
+  startup.py       arrancar con Windows (entrada Run del registro)
   menu.py          menú de clic derecho
   config.py        preferencias del usuario
   app.py           ventana, autodetección y bucle principal

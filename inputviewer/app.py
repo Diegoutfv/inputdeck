@@ -18,6 +18,7 @@ import pygame
 
 from . import config, keys, playstation, switch2, switch2_usb, xbox
 from .adapt import adapt
+from . import startup
 from .background import SUPPORTED, KeepAlive
 from .draw import Painter
 from .gamepad import PadState, SDLGamepad
@@ -92,7 +93,8 @@ def main():
                   ("bg:green", "Green (chroma key)", bg_green), ("bg:black", "Black", not bg_green)]
         if SUPPORTED:  # de momento solo Windows
             items += [(None, "-", False), (None, "Window", False),
-                      ("keepalive", "Keep capturing when minimized", keep_alive.enabled)]
+                      ("keepalive", "Keep capturing when minimized", keep_alive.enabled),
+                      ("autostart", "Start with Windows", startup.is_enabled())]
         return items
 
     if "--open-menu" in argv:
@@ -122,6 +124,8 @@ def main():
                 elif picked and picked.startswith("bg:"):
                     bg_green = picked == "bg:green"
                     config.save({**config.load(), "background": "green" if bg_green else "black"})
+                elif picked == "autostart":
+                    startup.set_enabled(not startup.is_enabled())
                 elif picked == "keepalive":
                     keep_alive.enabled = not keep_alive.enabled
                     config.save({**config.load(), "keep_running": keep_alive.enabled})

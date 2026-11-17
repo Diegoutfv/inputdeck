@@ -35,6 +35,10 @@ mouse in a minimalist white-outline style.
 - Keyboard keys and mouse buttons below the controller, **only while they are pressed**.
 - Resizable window drawn at its real resolution (sharp in OBS).
 - With no controller connected it shows "Waiting for a controller to connect…".
+- **Keeps capturing when minimized (Windows):** Windows stops drawing minimized windows, so OBS's
+  *Window Capture* freezes or goes black. With **Keep capturing when minimized** (right-click menu,
+  on by default), the minimize button makes the window invisible and click-through instead, while
+  OBS keeps capturing it live. Click its button in the taskbar to bring it back.
 
 ## Usage
 
@@ -67,7 +71,8 @@ pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libu
 - **Global keyboard/mouse** (pynput, in a separate process so the cursor doesn't lag while you
   move the window):
   - Windows: works without extra permissions (games running as administrator may require running
-    the viewer as administrator too).
+    the viewer as administrator too). Likewise, keys pressed while an elevated window has the focus
+    (for example OBS run as administrator) are not seen by a normal viewer.
   - macOS: you must grant the program *Accessibility* / *Input Monitoring* permission.
   - Linux: requires X11 (does not work on pure Wayland).
 - The mouse wheel is not shown.
@@ -87,6 +92,7 @@ inputviewer/
   keys.py          global keyboard and mouse (pynput, separate process)
   draw.py          drawing primitives
   xbox.py / playstation.py / switch2.py   visual layouts
+  background.py    keep capturing when minimized (Windows)
   menu.py          right-click menu
   config.py        user preferences
   app.py           window, auto-detection and main loop
@@ -136,6 +142,11 @@ el ratón con un estilo minimalista de contornos blancos.
 - Teclas y botones del ratón bajo el mando, **solo mientras se pulsan**.
 - Ventana redimensionable que se dibuja a la resolución real (nítido en OBS).
 - Sin mando conectado muestra «Waiting for a controller to connect…».
+- **Sigue capturando al minimizar (Windows):** Windows deja de dibujar las ventanas minimizadas, así
+  que la *Captura de ventana* de OBS se congela o se queda en negro. Con **Keep capturing when
+  minimized** (menú de clic derecho, activada por defecto), el botón de minimizar hace la ventana
+  invisible y transparente a los clics en vez de minimizarla, y OBS la sigue capturando en vivo.
+  Pulsa su botón en la barra de tareas para recuperarla.
 
 ## Uso
 
@@ -168,7 +179,8 @@ pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libu
 - **Teclado/ratón globales** (pynput, en un proceso aparte para no ralentizar el cursor al mover
   la ventana):
   - Windows: funciona sin permisos extra (los juegos como administrador pueden requerir ejecutar
-    el viewer como administrador).
+    el viewer como administrador). Igualmente, las teclas que pulses mientras una ventana elevada
+    tiene el foco (por ejemplo OBS ejecutado como administrador) no las ve un viewer normal.
   - macOS: hay que dar permiso de *Accesibilidad* / *Monitorización de entrada* al programa.
   - Linux: requiere X11 (no funciona con Wayland puro).
 - La rueda del ratón no se muestra.
@@ -188,6 +200,7 @@ inputviewer/
   keys.py          teclado y ratón globales (pynput, proceso aparte)
   draw.py          primitivas de dibujo
   xbox.py / playstation.py / switch2.py   distribuciones visuales
+  background.py    seguir capturando al minimizar (Windows)
   menu.py          menú de clic derecho
   config.py        preferencias del usuario
   app.py           ventana, autodetección y bucle principal

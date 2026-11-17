@@ -18,6 +18,7 @@ import pygame
 
 from . import config, keys, playstation, switch2, switch2_usb, xbox
 from .adapt import adapt
+from .background import SUPPORTED, KeepAlive
 from .draw import Painter
 from .gamepad import PadState, SDLGamepad
 from .menu import ContextMenu
@@ -81,6 +82,7 @@ def main():
     if choice != "auto" and choice not in LAYOUTS:
         choice = "auto"
     menu = ContextMenu()
+    keep_alive = KeepAlive(cfg.get("keep_running", True))  # al minimizar: seguir capturable por OBS (Windows)
     bg_green = cfg.get("background", "green") != "black" and shot is None  # fondo preferido (chroma key)
 
     def menu_items():
@@ -88,6 +90,9 @@ def main():
         items += [(f"layout:{k}", t, k == choice) for k, t in LAYOUT_CHOICES]
         items += [(None, "-", False), (None, "Background", False),
                   ("bg:green", "Green (chroma key)", bg_green), ("bg:black", "Black", not bg_green)]
+        if SUPPORTED:  # de momento solo Windows
+            items += [(None, "-", False), (None, "Window", False),
+                      ("keepalive", "Keep capturing when minimized", keep_alive.enabled)]
         return items
 
     if "--open-menu" in argv:
@@ -101,6 +106,7 @@ def main():
     running = True
     while running:
         for e in pygame.event.get():
+            keep_alive.handle(e)
             if e.type == pygame.QUIT:
                 running = False
             elif e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
@@ -116,6 +122,9 @@ def main():
                 elif picked and picked.startswith("bg:"):
                     bg_green = picked == "bg:green"
                     config.save({**config.load(), "background": "green" if bg_green else "black"})
+                elif picked == "keepalive":
+                    keep_alive.enabled = not keep_alive.enabled
+                    config.save({**config.load(), "keep_running": keep_alive.enabled})
             elif e.type == pygame.MOUSEMOTION and menu.open:
                 menu.hover = menu.item_at(e.pos, win.get_size())
 

@@ -103,13 +103,15 @@ pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libu
 
 ## Platform notes
 
-- **Global keyboard/mouse** (pynput, in a separate process so the cursor doesn't lag while you
-  move the window):
-  - Windows: works without extra permissions (games running as administrator may require running
-    the viewer as administrator too). Likewise, keys pressed while an elevated window has the focus
-    (for example OBS run as administrator) are not seen by a normal viewer.
-  - macOS: grant the program *Accessibility* / *Input Monitoring* permission.
-  - Linux: requires X11 (does not work on pure Wayland).
+- **Global keyboard/mouse** (in a separate process so the window can be dragged and resized
+  without freezing it):
+  - Windows: no hooks. It polls the real state of every key and mouse button 250 times a second
+    (`GetAsyncKeyState`), so a press is never lost and a button never gets "stuck" even with a
+    heavy game running (the cause of a stuck right click was a lost *release* event); the mouse
+    wheel is read with Raw Input. Needs no extra permissions. Games or windows run as administrator
+    have not been verified with this reader.
+  - macOS: pynput; grant the program *Accessibility* / *Input Monitoring* permission.
+  - Linux: pynput; requires X11 (does not work on pure Wayland).
 - **Gamepads** use SDL GameController (Xbox, PlayStation…) and a custom USB backend for the
   Switch 2 Pro Controller (Windows only). If Steam is open, its desktop configuration can turn the
   controller into a mouse/keyboard on Windows; that is independent of this program.
@@ -129,7 +131,8 @@ inputviewer/
   chips.py         gamepad state -> box names
   gamepad.py       SDL controller backend -> PadState
   switch2_usb.py   USB backend for the Switch 2 Pro Controller -> PadState
-  keys.py          global keyboard and mouse (pynput, separate process)
+  keys.py          global keyboard and mouse (separate process)
+  winnative.py     Windows reader: polls key/button state + Raw Input wheel (no hooks)
   draw.py          drawing primitives
   app.py           window and main loop
 run.py             entry point
@@ -237,13 +240,16 @@ pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libu
 
 ## Notas por plataforma
 
-- **Teclado/ratón globales** (pynput, en un proceso aparte para no ralentizar el cursor al mover
-  la ventana):
-  - Windows: funciona sin permisos extra (los juegos como administrador pueden requerir ejecutar
-    el viewer como administrador). Igualmente, las teclas que pulses mientras una ventana elevada
-    tiene el foco (por ejemplo OBS ejecutado como administrador) no las ve un viewer normal.
-  - macOS: hay que dar permiso de *Accesibilidad* / *Monitorización de entrada* al programa.
-  - Linux: requiere X11 (no funciona con Wayland puro).
+- **Teclado/ratón globales** (en un proceso aparte para poder arrastrar y redimensionar la ventana
+  sin que se congele):
+  - Windows: sin hooks. Consulta el estado real de cada tecla y botón del ratón 250 veces por
+    segundo (`GetAsyncKeyState`), así que no se pierde ninguna pulsación ni se queda un botón
+    «pegado» aunque haya un juego pesado abierto (la causa de un clic derecho pegado era un aviso
+    de *soltar* perdido); la rueda se lee con Raw Input. No necesita permisos extra. Con juegos o
+    ventanas ejecutadas como administrador no se ha verificado este lector.
+  - macOS: pynput; hay que dar permiso de *Accesibilidad* / *Monitorización de entrada* al
+    programa.
+  - Linux: pynput; requiere X11 (no funciona con Wayland puro).
 - **Mandos:** usan SDL GameController (Xbox, PlayStation…) y un backend USB propio para el Switch 2
   Pro Controller (solo Windows). Si Steam está abierto, su configuración de escritorio puede
   convertir el mando en ratón/teclado en Windows; es independiente de este programa.
@@ -263,7 +269,8 @@ inputviewer/
   chips.py         estado del mando -> nombres de cajitas
   gamepad.py       backend de mando SDL -> PadState
   switch2_usb.py   backend USB del Switch 2 Pro Controller -> PadState
-  keys.py          teclado y ratón globales (pynput, proceso aparte)
+  keys.py          teclado y ratón globales (proceso aparte)
+  winnative.py     lector para Windows: sondea teclas/botones + rueda con Raw Input (sin hooks)
   draw.py          primitivas de dibujo
   app.py           ventana y bucle principal
 run.py             punto de entrada

@@ -1,12 +1,14 @@
-"""Teclado y ratón globales (multiplataforma) con pynput.
+"""Teclado y ratón globales (multiplataforma).
+
+  * Windows: lectura SIN hooks (ver winnative.py): se consulta el estado real de cada tecla y
+    botón, así que no se pierde ninguna pulsación ni se queda nada «pegado», ni siquiera con un
+    juego pesado abierto.
+  * macOS / Linux: pynput. En macOS hace falta el permiso de "Accesibilidad / Monitorización de
+    entrada"; en Linux funciona con X11 (no con Wayland puro).
 
 La escucha corre en un PROCESO aparte. Motivo: al arrastrar o redimensionar la ventana, Windows
-deja el hilo principal dentro de su bucle modal con el GIL de Python tomado; un hook de ratón
-en el mismo proceso se queda esperando el GIL en cada movimiento y el cursor de todo el sistema
-va a tirones. En otro proceso no hay GIL compartido, así que no afecta.
-
-Recibe cada pulsación/suelta como evento (sin muestreo). En macOS hace falta el permiso de
-"Accesibilidad / Monitorización de entrada"; en Linux funciona con X11 (no con Wayland puro).
+deja el hilo principal dentro de su bucle modal con el GIL de Python tomado, y todo lo que corra
+en ese proceso se queda congelado. En otro proceso no hay GIL compartido, así que no afecta.
 """
 import multiprocessing as mp
 import queue
@@ -16,12 +18,16 @@ import time
 
 MIN_VISIBLE = 0.025  # un toque muy corto se ve al menos este tiempo; luego se apaga al soltar
 SCROLL_VISIBLE = 0.18  # cuánto se ve encendido un paso de la rueda del ratón
+WINDOWS = sys.platform == "win32"
 
 try:
     from pynput import keyboard, mouse
     AVAILABLE = True
 except Exception:  # pynput no disponible o sin entorno gráfico
-    AVAILABLE = False
+    AVAILABLE = WINDOWS  # en Windows no hace falta pynput
+
+if WINDOWS:
+    from . import winnative
 
 _SUPER = {"win32": "WIN", "darwin": "CMD"}.get(sys.platform, "SUPER")
 _SPECIAL = {
@@ -59,6 +65,10 @@ def _ident(key):
 
 def _child(q):
     """Proceso hijo: solo escucha y manda eventos por la cola (trabajo mínimo por evento)."""
+    if WINDOWS:
+        winnative.run(q, None, mp.parent_process())  # termina solo si el programa principal se cierra
+        return
+
     def kd(key):
         ident, name = _ident(key)
         if ident is not None and name:

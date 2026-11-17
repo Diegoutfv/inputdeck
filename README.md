@@ -73,13 +73,15 @@ pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libu
 
 - **Controller:** uses SDL GameController, so button names are identical on every OS. The
   DualSense touchpad click depends on SDL exposing it on your system.
-- **Global keyboard/mouse** (pynput, in a separate process so the cursor doesn't lag while you
-  move the window):
-  - Windows: works without extra permissions (games running as administrator may require running
-    the viewer as administrator too). Likewise, keys pressed while an elevated window has the focus
-    (for example OBS run as administrator) are not seen by a normal viewer.
-  - macOS: you must grant the program *Accessibility* / *Input Monitoring* permission.
-  - Linux: requires X11 (does not work on pure Wayland).
+- **Global keyboard/mouse** (in a separate process so the window can be dragged and resized
+  without freezing it):
+  - Windows: no hooks. It polls the real state of every key and mouse button 250 times a second
+    (`GetAsyncKeyState`), so a press is never lost and a button never gets "stuck" even with a
+    heavy game running (the cause of a stuck right click was a lost *release* event). Needs no
+    extra permissions. Games or windows run as administrator have not been verified with this
+    reader.
+  - macOS: pynput; you must grant the program *Accessibility* / *Input Monitoring* permission.
+  - Linux: pynput; requires X11 (does not work on pure Wayland).
 - The mouse wheel is not shown.
 - **Steam:** if Steam is open, its desktop configuration can turn the controller into a
   mouse/keyboard on Windows; that is independent of this program (which only reads the controller).
@@ -94,7 +96,8 @@ inputviewer/
   gamepad.py       SDL controller backend (Xbox, PlayStation...) -> common PadState
   switch2_usb.py   USB backend for the Switch 2 Pro Controller -> PadState
   adapt.py         converts buttons between controller families (for the manual picker)
-  keys.py          global keyboard and mouse (pynput, separate process)
+  keys.py          global keyboard and mouse (separate process)
+  winnative.py     Windows reader: polls key/button state (no hooks)
   draw.py          drawing primitives
   xbox.py / playstation.py / switch2.py   visual layouts
   background.py    keep capturing when minimized (Windows)
@@ -187,13 +190,16 @@ pyinstaller --noconfirm --onefile --windowed --name InputDeck --collect-all libu
 
 - **Mando:** usa SDL GameController, así que los nombres de botón son idénticos en todos los SO.
   El clic del touchpad del DualSense depende de que SDL lo exponga en tu sistema.
-- **Teclado/ratón globales** (pynput, en un proceso aparte para no ralentizar el cursor al mover
-  la ventana):
-  - Windows: funciona sin permisos extra (los juegos como administrador pueden requerir ejecutar
-    el viewer como administrador). Igualmente, las teclas que pulses mientras una ventana elevada
-    tiene el foco (por ejemplo OBS ejecutado como administrador) no las ve un viewer normal.
-  - macOS: hay que dar permiso de *Accesibilidad* / *Monitorización de entrada* al programa.
-  - Linux: requiere X11 (no funciona con Wayland puro).
+- **Teclado/ratón globales** (en un proceso aparte para poder arrastrar y redimensionar la ventana
+  sin que se congele):
+  - Windows: sin hooks. Consulta el estado real de cada tecla y botón del ratón 250 veces por
+    segundo (`GetAsyncKeyState`), así que no se pierde ninguna pulsación ni se queda un botón
+    «pegado» aunque haya un juego pesado abierto (la causa de un clic derecho pegado era un aviso
+    de *soltar* perdido). No necesita permisos extra. Con juegos o ventanas ejecutadas como
+    administrador no se ha verificado este lector.
+  - macOS: pynput; hay que dar permiso de *Accesibilidad* / *Monitorización de entrada* al
+    programa.
+  - Linux: pynput; requiere X11 (no funciona con Wayland puro).
 - La rueda del ratón no se muestra.
 - **Steam:** si Steam está abierto, su configuración de escritorio puede convertir el mando en
   ratón/teclado en Windows; es independiente de este programa (que solo lee el mando).
@@ -208,7 +214,8 @@ inputviewer/
   gamepad.py       backend de mando SDL (Xbox, PlayStation...) -> PadState común
   switch2_usb.py   backend USB del Switch 2 Pro Controller -> PadState
   adapt.py         convierte botones entre familias de mandos (para el selector manual)
-  keys.py          teclado y ratón globales (pynput, proceso aparte)
+  keys.py          teclado y ratón globales (proceso aparte)
+  winnative.py     lector para Windows: sondea el estado de teclas/botones (sin hooks)
   draw.py          primitivas de dibujo
   xbox.py / playstation.py / switch2.py   distribuciones visuales
   background.py    seguir capturando al minimizar (Windows)

@@ -13,7 +13,7 @@ os.environ.setdefault("SDL_JOYSTICK_ALLOW_BACKGROUND_EVENTS", "1")
 
 import pygame
 
-from . import chips, config, keys, switch2_usb
+from . import chips, config, keys, startup, switch2_usb
 from .background import SUPPORTED, KeepAlive
 from . import layout as L
 from .draw import FONT_NAMES, Painter
@@ -116,12 +116,19 @@ def main():
                   ("bg:green", "Green (chroma key)", bg_green), ("bg:black", "Black", not bg_green)]
         if SUPPORTED:  # de momento solo Windows
             items += [(None, "-", False), (None, "Window", False),
-                      ("keepalive", "Keep capturing when minimized", keep_alive.enabled)]
+                      ("keepalive", "Keep capturing when minimized", keep_alive.enabled),
+                      ("autostart", "Start with Windows", startup.is_enabled())]
         return items
 
     def do_menu(key):
         nonlocal confirm, bg_green
-        if key == "keepalive":
+        if key == "autostart":
+            turn_on = not startup.is_enabled()
+            if startup.set_enabled(turn_on):
+                say("It will start with Windows" if turn_on else "It won't start with Windows")
+            else:
+                say("Could not change the Windows startup setting")
+        elif key == "keepalive":
             keep_alive.enabled = not keep_alive.enabled
             config.save({**config.load(), "keep_running": keep_alive.enabled})
             say("Minimizing now keeps OBS capturing" if keep_alive.enabled else "Minimizing now works normally")

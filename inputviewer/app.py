@@ -1,6 +1,6 @@
 """Ventana principal: teclado + ratón con diseños editables; los mandos aparecen como cajitas.
 
-Clic derecho = menú (elegir / editar / crear / duplicar / borrar diseños).  G = fondo verde / negro.
+Clic derecho = menú (diseños: elegir / editar / crear / duplicar / borrar; fondo verde o negro).
 Opciones de prueba:  --screenshot ruta.png   --demo   --edit-demo   --open-menu
 """
 import os
@@ -81,6 +81,7 @@ def main():
     L.normalize(layout)
     layout_ver = 0
     editor, menu = Editor(), ContextMenu()
+    bg_green = cfg.get("background", "green") != "black" and shot is None  # fondo preferido (chroma key)
     confirm = None                # ("delete", id) mientras se espera sí/no
     toast, toast_until = "", 0.0
 
@@ -108,12 +109,17 @@ def main():
                   ("new", "New blank layout", False), ("dup", "Duplicate this layout", False)]
         if layout_id != L.BUILTIN:
             items.append(("del", "Delete this layout…", False))
-        items += [(None, "-", False), ("folder", "Open layouts folder", False)]
+        items += [(None, "-", False), ("folder", "Open layouts folder", False),
+                  (None, "-", False), (None, "Background", False),
+                  ("bg:green", "Green (chroma key)", bg_green), ("bg:black", "Black", not bg_green)]
         return items
 
     def do_menu(key):
-        nonlocal confirm
-        if key.startswith("layout:"):
+        nonlocal confirm, bg_green
+        if key.startswith("bg:"):
+            bg_green = key == "bg:green"
+            config.save({**config.load(), "background": "green" if bg_green else "black"})
+        elif key.startswith("layout:"):
             set_layout(key[7:])
         elif key == "edit":
             if layout_id == L.BUILTIN:
@@ -151,7 +157,6 @@ def main():
         menu.show((60, 60), menu_items())
         menu.hover = "edit"
 
-    bg_green = shot is None
     last_key, scaled = None, pygame.Surface((1, 1))
     clock = pygame.time.Clock()
     t0 = time.time()
@@ -190,9 +195,7 @@ def main():
                     finish_edit(res == "save")
                     editing = editor.active
             else:
-                if e.type == pygame.KEYDOWN and e.key == pygame.K_g:
-                    bg_green = not bg_green
-                elif e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
+                if e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                     menu.hide()
                 elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 3:
                     menu.show(e.pos, menu_items())

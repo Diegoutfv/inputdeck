@@ -42,8 +42,9 @@ pip install -r requirements.txt
 python run.py
 ```
 
-**Right-click** opens the menu (choose, edit, create, duplicate or delete layouts). **G** toggles a
-green background (chroma key in OBS: Window Capture + "Color Key" filter `#00B140`) and black.
+**Right-click** opens the menu: choose, edit, create, duplicate or delete layouts, and pick the
+**Background** (green for a chroma key in OBS — Window Capture + "Color Key" filter `#00B140` —
+or black). Both choices are remembered.
 Preview without pressing anything: `python run.py --demo`.
 
 ## Custom layouts
@@ -174,8 +175,9 @@ pip install -r requirements.txt
 python run.py
 ```
 
-**Clic derecho** abre el menú (elegir, editar, crear, duplicar o borrar diseños). **G** alterna
-fondo verde (chroma key en OBS: Captura de ventana + filtro «Clave de color» `#00B140`) y negro.
+**Clic derecho** abre el menú: elegir, editar, crear, duplicar o borrar diseños, y elegir el
+**Background** (verde para un chroma key en OBS —Captura de ventana + filtro «Clave de color»
+`#00B140`— o negro). Ambas elecciones se recuerdan.
 Vista previa sin pulsar nada: `python run.py --demo`.
 
 ## Diseños personalizados

@@ -1,7 +1,8 @@
 """Ventana principal: mando (autodetectado) + teclas/ratón.
 
-Tecla G = fondo verde / negro. Clic derecho = elegir la distribución (Auto por defecto: la del
-mando conectado). La elección se guarda y se aplica aunque el mando conectado sea de otro tipo.
+Clic derecho = menú: elegir la distribución (Auto por defecto: la del mando conectado) y el fondo
+(verde para chroma key o negro). Las dos elecciones se guardan; la distribución se aplica aunque el
+mando conectado sea de otro tipo.
 
 Opciones de prueba:  --screenshot ruta.png   --demo [xbox|playstation|switch2|none]
                      --layout [auto|xbox|playstation|switch2]   --open-menu
@@ -22,6 +23,12 @@ from .gamepad import PadState, SDLGamepad
 from .menu import ContextMenu
 
 LAYOUTS = {"xbox": xbox, "playstation": playstation, "switch2": switch2}
+LAYOUT_CHOICES = [
+    ("auto", "Auto (connected controller)"),
+    ("xbox", "Xbox Series"),
+    ("playstation", "PlayStation / DualSense"),
+    ("switch2", "Switch 2 Pro Controller"),
+]
 LW = 270
 GREEN = (0, 177, 64)  # chroma key para OBS
 MUTED = (170, 176, 188)  # color del aviso "esperando mando"
@@ -74,11 +81,19 @@ def main():
     if choice != "auto" and choice not in LAYOUTS:
         choice = "auto"
     menu = ContextMenu()
-    if "--open-menu" in argv:
-        menu.show((60, 60))
-        menu.hover = "xbox"
+    bg_green = cfg.get("background", "green") != "black" and shot is None  # fondo preferido (chroma key)
 
-    bg_green = shot is None
+    def menu_items():
+        items = [(None, "Layout", False)]
+        items += [(f"layout:{k}", t, k == choice) for k, t in LAYOUT_CHOICES]
+        items += [(None, "-", False), (None, "Background", False),
+                  ("bg:green", "Green (chroma key)", bg_green), ("bg:black", "Black", not bg_green)]
+        return items
+
+    if "--open-menu" in argv:
+        menu.show((60, 60), menu_items())
+        menu.hover = "layout:xbox"
+
     kind = "xbox"
     last_key, scaled = None, pygame.Surface((1, 1))
     clock = pygame.time.Clock()
@@ -88,18 +103,19 @@ def main():
         for e in pygame.event.get():
             if e.type == pygame.QUIT:
                 running = False
-            elif e.type == pygame.KEYDOWN and e.key == pygame.K_g:
-                bg_green = not bg_green
             elif e.type == pygame.KEYDOWN and e.key == pygame.K_ESCAPE:
                 menu.hide()
             elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 3:  # clic derecho: abrir menú
-                menu.show(e.pos)
+                menu.show(e.pos, menu_items())
             elif e.type == pygame.MOUSEBUTTONDOWN and e.button == 1 and menu.open:
                 picked = menu.item_at(e.pos, win.get_size())
-                if picked:
-                    choice = picked
-                    config.save({**cfg, "layout": choice})
                 menu.hide()  # un clic en cualquier sitio cierra el menú
+                if picked and picked.startswith("layout:"):
+                    choice = picked[7:]
+                    config.save({**config.load(), "layout": choice})
+                elif picked and picked.startswith("bg:"):
+                    bg_green = picked == "bg:green"
+                    config.save({**config.load(), "background": "green" if bg_green else "black"})
             elif e.type == pygame.MOUSEMOTION and menu.open:
                 menu.hover = menu.item_at(e.pos, win.get_size())
 
@@ -129,7 +145,7 @@ def main():
             win.fill(bg)
             win.blit(scaled, ((ww - scaled.get_width()) // 2, (wh - scaled.get_height()) // 2))
             if menu.open:
-                menu.draw(win, choice)
+                menu.draw(win)
             pygame.display.flip()
             if shot and time.time() - t0 > 1.5:
                 running = False
@@ -151,7 +167,7 @@ def main():
         win.fill(bg)
         win.blit(scaled, ((ww - scaled.get_width()) // 2, (wh - scaled.get_height()) // 2))
         if menu.open:
-            menu.draw(win, choice)
+            menu.draw(win)
         pygame.display.flip()
 
         if shot:

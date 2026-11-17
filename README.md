@@ -50,8 +50,8 @@ in `%APPDATA%\InputViewer\config.json` (macOS: `~/Library/Application Support/In
 Linux: `~/.config/InputViewer`). When you force a layout, buttons are converted by physical
 position (e.g. Xbox A, at the bottom, lights up Nintendo B, also at the bottom).
 
-**G** toggles a green background (chroma key in OBS: Window Capture + "Color Key" filter
-`#00B140`) and black.
+The same right-click menu has a **Background** section: green (chroma key in OBS: Window Capture +
+"Color Key" filter `#00B140`) or black. Your choice is remembered.
 
 ## Build an executable
 
@@ -151,8 +151,8 @@ se guarda en `%APPDATA%\InputViewer\config.json` (macOS: `~/Library/Application 
 Linux: `~/.config/InputViewer`). Al forzar una distribución, los botones se convierten por
 posición física (p. ej. la A de Xbox, abajo, ilumina la B de Nintendo, también abajo).
 
-**G** alterna fondo verde (chroma key en OBS: Captura de ventana + filtro «Clave de color»
-`#00B140`) y negro.
+El mismo menú de clic derecho tiene una sección **Background**: verde (chroma key en OBS: Captura
+de ventana + filtro «Clave de color» `#00B140`) o negro. Tu elección se recuerda.
 
 ## Compilar un ejecutable
 
